@@ -12,7 +12,9 @@ module.exports = {
   ],
   devtool: 'inline-source-map',
   devServer: {
-    static: './dist',
+    port: 3000,
+    hot: false,
+    liveReload: true,
   },
   output: {
     filename: "[name].js",
