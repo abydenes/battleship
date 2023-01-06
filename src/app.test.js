@@ -1,6 +1,29 @@
 /* eslint-disable no-undef */
-import { gameboard1, ship1 } from "./app";
+import { Ship, Gameboard } from "./app";
 
-test("isSunk function returns a boolean value", () => {
-  expect(ship1.isSunk()).toBe(false);
+describe('Ship', () => {
+  let ship;
+
+  beforeEach(() => {
+    ship = Ship(3);
+  });
+
+  test('is initially not sunk', () => {
+    expect(ship.isSunk()).toBe(false);
+  });
+
+  test('is sunk after enough hits', () => {
+    ship.hit();
+    ship.hit();
+    ship.hit();
+    expect(ship.isSunk()).toBe(true);
+  });
+
+  test('is not sunk after fewer than required number of hits', () => {
+    ship.hit();
+    ship.hit();
+    expect(ship.isSunk()).toBe(false);
+  });
 });
+
+
