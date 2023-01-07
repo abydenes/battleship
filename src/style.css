@@ -17,16 +17,66 @@ body {
 .header {
   height: 10vh;
   text-align: center;
-  background-color: rgb(155, 118, 156);
+  background-color: rgb(184, 154, 185);
 }
 
 .header h3 {
-  padding: 2rem;
+  padding: 1rem;
   font-size: 2rem;
 }
 
 .main-container {
   background-color: rgb(195, 228, 195);
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.gameboards-container {
+  background-color: rgb(197, 154, 154);
+  height: 80vh;
+  width: 90vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.gameboard-left,
+.gameboard-right {
+  background-color: rgb(148, 131, 186);
+  height: 90%;
+  width: 43vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 1rem;
+}
+
+.player-name {
+  font-size: 1.2rem;
+  padding: 8px;
+  font-weight: bold;
+}
+
+.player1-gameboard,
+.player2-gameboard {
+  background-color: #fff;
+  border: 3px solid black;
+}
+
+.row {
+  display: flex;
+}
+
+.cell {
+  border: 1px solid rgb(213, 213, 213);
+  height: 32px;
+  width: 32px;
+}
+
+.occupied {
+  background-color: rgb(177, 200, 224);
 }
 
 .footer {
