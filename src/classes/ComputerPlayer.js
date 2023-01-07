@@ -1,3 +1,5 @@
+import Player from "./Player";
+
 export default class ComputerPlayer extends Player {
   placeShips() {
     // Place ships on the gameboard using an AI strategy
