@@ -1,78 +1,21 @@
 /* eslint-disable max-classes-per-file */
-export class Ship {
-  constructor(length, hitNumber = 0) {
-    this.length = length;
-    this.hitNumber = hitNumber;
-  }
+import Player from "./classes/Player";
+import ComputerPlayer from "./classes/ComputerPlayer";
 
-  hit() {
-    this.hitNumber += 1;
-  }
+const gameController = (() => {
+  const player1 = new Player("player1", "human");
+  const player2 = new ComputerPlayer("player2", "computer");
+  let currentPlayer = player1;
 
-  isSunk() {
-    return this.hitNumber === this.length;
-  }
-}
+  const changeCurrentPlayer = () => {
+    if (currentPlayer === player1) {
+      currentPlayer = player2;
+    } else currentPlayer = player1;
+  };
 
-export class Gameboard {
-  constructor() {
-    this.gameboard = Array.from({ length: 10 }, () => new Array(10).fill(null));
-    this.missedAttacks = 0;
-  }
-
-  getMissedAttacks() {
-    return this.missedAttacks;
-  }
-
-  getCell(x, y) {
-    return this.gameboard[x][y];
-  }
-
-  placeShip(x, y, length) {
-    this.gameboard[x][y] = new Ship(length);
-  }
-
-  receiveAttack(x, y) {
-    if (this.gameboard[x][y]) {
-      this.gameboard[x][y].hit();
-    } else this.missedAttacks += 1;
-  }
-
-  areAllShipsSunk() {
-    return this.gameboard.every((el) =>
-      el.every((cell) => cell === null || cell.isSunk())
-    );
-  }
-}
-
-export class Player {
-  constructor(playerName, type) {
-    this.gameboard = new Gameboard();
-    this.playerName = playerName;
-    this.type = type;
-  }
-
-  getName() {
-    return this.playerName;
-  }
-
-  getType() {
-    return this.type;
-  }
-
-  getGameboard() {
-    return this.gameboard;
-  }
-
-  attack(enemy) {
-
-  }
-}
-
-export class ComputerPlayer extends Player {
-  placeShips() {
-    // Place ships on the gameboard using an AI strategy
-  }
-
-  takeTurn() {}
-}
+  const playRound = (x, y) => {
+    player1.attack(player2, x, y);
+    changeCurrentPlayer();
+    player2.makeMove(player1);
+  };
+})();

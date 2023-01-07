@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import { Ship, Gameboard, Player } from "./app";
+import { Ship, Gameboard, Player, gameController, ComputerPlayer } from "./app";
 
 describe("Ship", () => {
   let ship;
@@ -42,7 +42,7 @@ describe("Gameboard", () => {
 
   test("should be able to receive an attack at a given position", () => {
     gameboard.placeShip(3, 4, 5);
-    gameboard.receiveAttack(3, 4);
+    gameboard.registerAttack(3, 4);
     expect(gameboard.getCell(3, 4).hitNumber).toBe(1);
   });
 
@@ -69,15 +69,48 @@ describe("Player", () => {
     player = new Player("Alice", "human");
   });
 
-  test("should be able to get player name", () => {
+  it("should be able to get player name", () => {
     expect(player.getName()).toBe("Alice");
   });
 
-  test("should be able to get player type", () => {
+  it("should be able to get player type", () => {
     expect(player.getType()).toBe("human");
   });
 
-  test("should be able to get player gameboard", () => {
+  it("should be able to get player gameboard", () => {
     expect(player.getGameboard()).toBeInstanceOf(Gameboard);
+  });
+
+  it("should call the receiveAttack method on the enemy gameboard", () => {
+    const enemy = { receiveAttack: jest.fn() };
+    player.attack(enemy, 0, 0);
+    expect(enemy.receiveAttack).toHaveBeenCalledWith(0, 0);
+  });
+
+  describe("ComputerPlayer", () => {
+    it("should have a gameboard", () => {
+      const player2 = new ComputerPlayer("player", "computer");
+      expect(player2.gameboard).toBeDefined();
+      expect(player2.gameboard).toBeInstanceOf(Gameboard);
+    });
+
+    it("can make a random move", () => {
+      const computerPlayer = new ComputerPlayer("computer", "computer");
+      const mockEnemy = { receiveAttack: jest.fn() };
+      computerPlayer.makeMove(mockEnemy);
+      expect(mockEnemy.receiveAttack).toHaveBeenCalled();
+    });
+
+    it("can make random moves", () => {
+      const computerPlayer = new ComputerPlayer("computer", "computer");
+      const mockEnemy = { receiveAttack: jest.fn() };
+      computerPlayer.makeMove(mockEnemy);
+      computerPlayer.makeMove(mockEnemy);
+      expect(mockEnemy.receiveAttack).toHaveBeenCalledWith(
+        expect.any(Number),
+        expect.any(Number)
+      );
+      expect(mockEnemy.receiveAttack).toHaveBeenCalledTimes(2);
+    });
   });
 });
