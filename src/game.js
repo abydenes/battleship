@@ -10,7 +10,6 @@ let currentPlayer = player1;
 
 // testing the old way
 export default function test() {
-  console.log(player1);
 }
 
 // populate gameboards with ships manually
@@ -50,6 +49,8 @@ player2.gameboard = [
 renderGameboard(player1.gameboard, "player1")
 renderGameboard(player2.gameboard, "player2")
 
+const cells = document.querySelectorAll(".cell")
+console.log(cells)
 
 const changeCurrentPlayer = () => {
   if (currentPlayer === player1) {

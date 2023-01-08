@@ -1,5 +1,3 @@
-export function init() {}
-
 export function renderGameboard(board, player) {
   const gameboard = document.querySelector(`.${player}-gameboard`);
   for (let i = 0; i < board.length; i += 1) {
@@ -23,3 +21,14 @@ export function renderGameboard(board, player) {
     gameboard.appendChild(rowElement);
   }
 }
+
+const cells = document.querySelectorAll(".cell");
+
+console.log(cells);
+cells.forEach((cell) => {
+  cell.addEventListener("click", (e) => {
+    console.log(e);
+  });
+});
+
+export function init() {}

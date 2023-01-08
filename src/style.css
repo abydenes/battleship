@@ -29,8 +29,13 @@ body {
   background-color: rgb(195, 228, 195);
   flex-grow: 1;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+.announcer {
+  font-size: 1.4rem;
 }
 
 .gameboards-container {
