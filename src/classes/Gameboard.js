@@ -10,15 +10,12 @@ export default class Gameboard {
     return this.missedAttacks;
   }
 
-  getCell(x, y) {
-    return this.gameboard[x][y];
-  }
-
   placeShip(x, y, length) {
     this.gameboard[x][y] = new Ship(length);
   }
 
-  registerAttack(x, y) {
+  receiveAttack(x, y) {
+    console.log(this.gameboard)
     if (this.gameboard[x][y]) {
       this.gameboard[x][y].hit();
     } else this.missedAttacks.push([x, y]);

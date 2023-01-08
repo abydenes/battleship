@@ -1,8 +1,4 @@
 import "./style.css";
-import {init} from "./UI";
+import initGame from "./game";
 
-// test
-import test from "./game";
-
-test();
-init();
+initGame();

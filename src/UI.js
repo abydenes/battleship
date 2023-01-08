@@ -7,6 +7,9 @@ export function renderGameboard(board, player) {
     for (let j = 0; j < row.length; j += 1) {
       const element = row[j];
       const cellElement = document.createElement("div");
+      cellElement.addEventListener("click", () => {
+        console.log(i,j)
+      })
       cellElement.classList.add("cell");
 
       if (element instanceof Object) {
@@ -22,13 +25,4 @@ export function renderGameboard(board, player) {
   }
 }
 
-const cells = document.querySelectorAll(".cell");
-
-console.log(cells);
-cells.forEach((cell) => {
-  cell.addEventListener("click", (e) => {
-    console.log(e);
-  });
-});
-
-export function init() {}
+export function initUI() {}
