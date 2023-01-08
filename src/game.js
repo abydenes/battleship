@@ -10,25 +10,46 @@ let currentPlayer = player1;
 
 // testing the old way
 export default function test() {
-  console.log(player1.gameboard);
+  console.log(player1);
 }
 
 // populate gameboards with ships manually
+// No.	Class of ship	Size
+// 1	  Carrier	        5
+// 2	  Battleship	    4
+// 3	  Destroyer	      3
+// 4	  Submarine	      3
+// 5	  Patrol Boat	    2
 
 player1.gameboard = [
-  [null, null, new Ship(2), new Ship(2), null, null, null, null, null, new Ship(1)],
+  [null, null, new Ship(2, "patrolboat"), new Ship(2, "patrolboat"), null, null, null, null, null, null],
   [null, null, null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, new Ship(4, "battleship"), new Ship(4, "battleship"), new Ship(4, "battleship"), new Ship(4, "battleship"), null],
   [null, null, null, null, null, null, null, null, null, null],
-  [new Ship(1), null, null, null, new Ship(4), new Ship(4), new Ship(4), new Ship(4), null, null],
-  [null, null, null, null, null, null, null, null, null, null],
-  [null, null, null, new Ship(2), new Ship(2), null, null, null, null, null],
-  [null, new Ship(2), null, null, null, null, null, null, null, null],
-  [null, new Ship(2), null, null, null, new Ship(3), new Ship(3), new Ship(3), null, new Ship(3)],
-  [new Ship(1), null, null, null, null, null, null, null, null, new Ship(3)],
-  [null, null, null, null, null, new Ship(1), null, null, null, new Ship(3)]
+  [null, new Ship(5, "carrier"), null, null, null, null, null, null, null, null],
+  [null, new Ship(5, "carrier"), null, null, null, null, null, null, null, null],
+  [null, new Ship(5, "carrier"), null, null, new Ship(3, "submarine"), new Ship(3, "submarine"), new Ship(3, "submarine"), null, null, null],
+  [null, new Ship(5, "carrier"), null, null, null, null, null, null, null, new Ship(3, "destroyer")],
+  [null, new Ship(5, "carrier"), null, null, null, null, null, null, null, new Ship(3, "destroyer")],
+  [null, null, null, null, null, null, null, null, null, new Ship(3, "destroyer")]
 ]
 
-renderGameboard(player1.gameboard)
+player2.gameboard = [
+  [null, null, new Ship(2, "patrolBoat"), null, null, null, null, null, null, null],
+  [null, null, new Ship(2, "patrolBoat"), null, null, null, null, null, null, null],
+  [null, null, null, null, null, new Ship(4, "battleship"), new Ship(4, "battleship"), new Ship(4, "battleship"), new Ship(4, "battleship"), null],
+  [null, null, null, null, null, null, null, null, null, null],
+  [null, new Ship(5, "carrier"), new Ship(5, "carrier"), new Ship(5, "carrier"), new Ship(5, "carrier"), new Ship(5, "carrier"), null, null, null, null],
+  [null, null, null, null, null, null, null, null, null, null],
+  [null, null, null, null, new Ship(3, "submarine"), new Ship(3, "submarine"), new Ship(3, "submarine"), null, null, null],
+  [null, null, null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, new Ship(3, "destroyer"), new Ship(3, "destroyer"), new Ship(3, "destroyer")],
+  [null, null, null, null, null, null, null, null, null, null]
+]
+
+renderGameboard(player1.gameboard, "player1")
+renderGameboard(player2.gameboard, "player2")
+
 
 const changeCurrentPlayer = () => {
   if (currentPlayer === player1) {
