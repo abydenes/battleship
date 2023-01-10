@@ -80,8 +80,12 @@ body {
   width: 32px;
 }
 
-.occupied {
+.ship {
   background-color: rgb(177, 200, 224);
+}
+
+.attacked {
+  background-color: rgb(255, 0, 0);
 }
 
 .footer {
