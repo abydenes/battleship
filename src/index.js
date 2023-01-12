@@ -4,16 +4,16 @@ import "./style.css";
 // Factory functions
 const Ship = (length, name, x, y, orientation) => {
   let hitNumber = 0;
-  const cells = [];
+  const components = [];
 
   if (orientation === "horizontal") {
     for (let i = y; i < y + length; i += 1) {
-      cells.push([x, i]);
+      components.push([x, i]);
     }
   }
   if (orientation === "vertical") {
     for (let i = x; i < x + length; i += 1) {
-      cells.push([i, y]);
+      components.push([i, y]);
     }
   }
 
@@ -25,34 +25,66 @@ const Ship = (length, name, x, y, orientation) => {
 
   const isSunk = () => hitNumber === length;
 
-  const getCells = () => cells;
+  const getComponents = () => components;
 
-  return { getName, getHit, isSunk, getCells };
+  return { getName, getHit, isSunk, getComponents };
 };
 
 const Gameboard = (owner) => {
   const board = Array.from({ length: 10 }, () => new Array(10).fill(null));
   const missedAttacks = [];
+  const hits = [];
 
   const getBoard = () => board;
   const getCell = (x, y) => board[x][y];
 
+  const moveExists = (x, y) => {
+    if (missedAttacks.some(([a, b]) => a === x && b === y)) return true;
+    if (hits.some(([a, b]) => a === x && b === y)) return true;
+    return false;
+  };
+
   const placeShip = (length, name, x, y, orientation) => {
-    console.log(board);
     if (!board[x][y]) {
       board[x][y] = Ship(length, name, x, y, orientation);
-      console.log(board[x][y].getCells());
     }
   };
 
-  const receiveAttack = (x, y) => {
-    if (missedAttacks.some(([a, b]) => a === x && b === y)) return;
+  const theDeckof = (x, y) => {
+    const allLocs = getAllLocations();
+    // if there is a Ship or a component at the attacked position
+    if (allLocs.some((arr) => arr.some(([a, b]) => a === x && b === y))) {
+      // find the Ship it belongs to
+      const attacked = allLocs.find((arr) =>
+        arr.some(([a, b]) => a === x && b === y)
+      );
+      // return the Ship object
+      return getCell(attacked[0][0], attacked[0][1]);
+    }
+    return false;
+  };
 
-    if (board[x][y]) {
-      board[x][y].getHit();
+  const receiveAttack = (x, y) => {
+    // if there is a ship at the given position
+    if (theDeckof(x, y)) {
+      // the deck gets attacked
+      theDeckof(x, y).getHit();
+      hits.push([x, y]);
     } else missedAttacks.push([x, y]);
-    console.log(`I received an attack on ${x} ${y}`);
-    console.log(missedAttacks);
+  };
+
+  const getAllLocations = () => {
+    const allLocs = [];
+    for (let i = 0; i < 10; i += 1) {
+      const row = board[i];
+      for (let j = 0; j < 10; j += 1) {
+        const cell = row[j];
+        if (cell instanceof Object) {
+          allLocs.push(cell.getComponents());
+        }
+      }
+    }
+    return allLocs;
   };
 
   const areAllShipsSunk = () =>
@@ -67,13 +99,15 @@ const Gameboard = (owner) => {
     getOwner,
     getCell,
     getBoard,
+    getAllLocations,
+    moveExists,
   };
 };
 
 const Player = (name) => {
   const randomCoord = () => {
-    const x = Math.floor(Math.random() * 11);
-    const y = Math.floor(Math.random() * 11);
+    const x = Math.floor(Math.random() * 10);
+    const y = Math.floor(Math.random() * 10);
     return [x, y];
   };
 
@@ -108,12 +142,10 @@ const displayController = (() => {
         rowElement.appendChild(cellElement);
 
         board.getBoard().forEach((row) => {
-          row.forEach((cell) => {       
-            // how does this even work????
-            if (cell instanceof Object) console.log("im an object")    
+          row.forEach((cell) => {
             if (
               cell instanceof Object &&
-              cell.getCells().some(([a, b]) => a === i && b === j)
+              cell.getComponents().some(([a, b]) => a === i && b === j)
             ) {
               cellElement.classList.add("ship");
             }
@@ -124,6 +156,11 @@ const displayController = (() => {
         player1Board.appendChild(rowElement);
       } else player2Board.appendChild(rowElement);
     }
+  };
+
+  const renderMessage = (msg) => {
+    const announcer = document.querySelector(".announcer");
+    announcer.textContent = msg;
   };
 
   const markShots = (player, x, y) => {
@@ -145,12 +182,12 @@ const displayController = (() => {
       cell.addEventListener("click", () => {
         const { x } = cell.dataset;
         const { y } = cell.dataset;
-        gameController.playRound(x, y);
+        gameController.playRound(+x, +y);
       })
     );
   };
 
-  return { renderBoard, addListeners, markShots };
+  return { renderBoard, renderMessage, addListeners, markShots };
 })();
 
 // GameController
@@ -168,14 +205,9 @@ const gameController = (() => {
   const player2 = Player("computer");
   const player1Board = Gameboard(player1);
   const player2Board = Gameboard(player2);
-  const gameOver = false;
+  let gameOver = false;
 
-  // populate gameboards manually
-  // player1Board.placeShip(2, "patrolBoat", 8, 1);
-  // player1Board.placeShip(2, "patrolBoat", 8, 2);
-
-  // player2Board.placeShip(2, "patrolBoat", 3, 2);
-  // player2Board.placeShip(2, "patrolBoat", 4, 2);
+  player1Board.placeShip(3, "destroyer", 6, 6, "vertical");
 
   player2Board.placeShip(3, "submarine", 4, 4, "horizontal");
   player2Board.placeShip(5, "carrier", 0, 0, "vertical");
@@ -184,9 +216,14 @@ const gameController = (() => {
   displayController.renderBoard(player2Board);
 
   const playRound = (x, y) => {
-    if (gameOver) return;
-    player1.attack(player2Board, x, y);
-    displayController.markShots("player2", x, y);
+    if (gameOver) {
+      return;
+    }
+
+    if (!player2Board.moveExists(x, y)) {
+      player1.attack(player2Board, x, y);
+      displayController.markShots("player2", x, y);
+    } else return;
 
     const randomCoords = player2.randomCoord();
     player2.attack(player1Board, ...randomCoords);
@@ -196,9 +233,14 @@ const gameController = (() => {
   };
 
   const checkWinner = () => {
-    // if all ships of a player are down
-    // set the other player as the winner of the game
-    // set gameOver to true
+    if (player1Board.areAllShipsSunk()) {
+      displayController.renderMessage("Computer won");
+      gameOver = true;
+    }
+    if (player2Board.areAllShipsSunk()) {
+      displayController.renderMessage("player won");
+      gameOver = true;
+    }
   };
 
   return { playRound };
