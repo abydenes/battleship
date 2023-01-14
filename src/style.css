@@ -68,6 +68,7 @@ body {
 .player2-gameboard {
   background-color: #fff;
   border: 3px solid black;
+  opacity: 1;
 }
 
 .row {
@@ -84,23 +85,23 @@ body {
   background-color: rgb(177, 200, 224);
 }
 
+.player2-gameboard .ship {
+  background-color: inherit;
+}
+
 .attacked:after {
-  display: inline-block;
+  display: inline;
   content: "\00d7";
-  font-size: 24px;
+  font-size: 48px;
   font-weight: 900;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   color: red;
+  position: relative;
+  left: 3px;
+  top: -14px;
 }
 
 .footer {
   background-color: gray;
+  display: flex;
+  justify-content: center;
 }
-
-/*
-
-
-
-*/

@@ -2,7 +2,7 @@
 import "./style.css";
 
 // Factory functions
-const Ship = (length, name, x, y, orientation) => {
+export const Ship = (length, name, x, y, orientation) => {
   let hitNumber = 0;
   const components = [];
 
@@ -30,7 +30,7 @@ const Ship = (length, name, x, y, orientation) => {
   return { getName, getHit, isSunk, getComponents };
 };
 
-const Gameboard = (owner) => {
+export const Gameboard = (owner) => {
   const board = Array.from({ length: 10 }, () => new Array(10).fill(null));
   const missedAttacks = [];
   const hits = [];
@@ -104,7 +104,7 @@ const Gameboard = (owner) => {
   };
 };
 
-const Player = (name) => {
+export const Player = (name) => {
   const randomCoord = () => {
     const x = Math.floor(Math.random() * 10);
     const y = Math.floor(Math.random() * 10);
@@ -163,6 +163,18 @@ const displayController = (() => {
     announcer.textContent = msg;
   };
 
+  const revealComponent = (cell) => {
+    if (cell.classList.contains("ship")) {
+      cell.style.backgroundColor = "red";
+    }
+  };
+
+  const toggleBoardBlur = () => {
+    if (player2Board.style.opacity === "0.7") {
+      player2Board.style.opacity = "1";
+    } else player2Board.style.opacity = "0.7";
+  };
+
   const markShots = (player, x, y) => {
     const targetBoard = document.querySelector(`.${player}-gameboard`);
 
@@ -171,6 +183,7 @@ const displayController = (() => {
     cells.forEach((cell) => {
       if (cell.dataset.x == x && cell.dataset.y == y) {
         cell.classList.add("attacked");
+        revealComponent(cell);
       }
     });
   };
@@ -187,7 +200,13 @@ const displayController = (() => {
     );
   };
 
-  return { renderBoard, renderMessage, addListeners, markShots };
+  return {
+    renderBoard,
+    renderMessage,
+    toggleBoardBlur,
+    addListeners,
+    markShots,
+  };
 })();
 
 // GameController
@@ -207,10 +226,19 @@ const gameController = (() => {
   const player2Board = Gameboard(player2);
   let gameOver = false;
 
-  player1Board.placeShip(3, "destroyer", 6, 6, "vertical");
+  // place player1 ships manually
+  player1Board.placeShip(5, "carrier", 3, 1, "vertical");
+  player1Board.placeShip(4, "battleship", 4, 4, "vertical");
+  player1Board.placeShip(3, "destroyer", 0, 7, "horizontal");
+  player1Board.placeShip(3, "submarine", 6, 6, "vertical");
+  player1Board.placeShip(2, "patrolboat", 9, 1, "horizontal");
 
-  player2Board.placeShip(3, "submarine", 4, 4, "horizontal");
-  player2Board.placeShip(5, "carrier", 0, 0, "vertical");
+  // place player2 ships manually
+  player2Board.placeShip(5, "carrier", 9, 1, "horizontal");
+  player2Board.placeShip(4, "battleship", 1, 2, "horizontal");
+  player2Board.placeShip(3, "destroyer", 3, 4, "vertical");
+  player2Board.placeShip(3, "submarine", 4, 0, "vertical");
+  player2Board.placeShip(2, "patrolboat", 6, 6, "horizontal");
 
   displayController.renderBoard(player1Board);
   displayController.renderBoard(player2Board);
@@ -225,9 +253,17 @@ const gameController = (() => {
       displayController.markShots("player2", x, y);
     } else return;
 
+    displayController.toggleBoardBlur();
+    displayController.renderMessage("It's computer's turn.");
+
     const randomCoords = player2.randomCoord();
     player2.attack(player1Board, ...randomCoords);
-    displayController.markShots("player1", ...randomCoords);
+
+    setTimeout(() => {
+      displayController.markShots("player1", ...randomCoords);
+      displayController.renderMessage("It's your turn.");
+      displayController.toggleBoardBlur();
+    }, 1200);
 
     checkWinner();
   };
