@@ -2,7 +2,7 @@
 import "./style.css";
 
 // Factory functions
-export const Ship = (length, name, x, y, orientation) => {
+export const Ship = (x, y, length, orientation) => {
   let hitNumber = 0;
   const components = [];
 
@@ -17,8 +17,6 @@ export const Ship = (length, name, x, y, orientation) => {
     }
   }
 
-  const getName = () => name;
-
   const getHit = () => {
     hitNumber += 1;
   };
@@ -27,7 +25,7 @@ export const Ship = (length, name, x, y, orientation) => {
 
   const getComponents = () => components;
 
-  return { getName, getHit, isSunk, getComponents };
+  return { getHit, isSunk, getComponents };
 };
 
 export const Gameboard = (owner) => {
@@ -44,10 +42,75 @@ export const Gameboard = (owner) => {
     return false;
   };
 
-  const placeShip = (length, name, x, y, orientation) => {
-    if (!board[x][y]) {
-      board[x][y] = Ship(length, name, x, y, orientation);
+  const placeShip = (x, y, length, orientation) => {
+    if (isPlacementValid(x, y, length, orientation)) {
+      board[x][y] = Ship(x, y, length, orientation);
     }
+    return false;
+  };
+
+  const placeShipRandomly = (x, y, length, orientation) => {
+    if (isPlacementValid(x, y, length, orientation)) {
+      board[x][y] = Ship(x, y, length, orientation);
+    } else
+      placeShipRandomly(randomNum(), randomNum(), length, randomDirection());
+  };
+
+  const isPlacementValid = (x, y, length, orientation) => {
+    const allLocsFlat = () => getAllLocations().flat();
+
+    const getBannedLocs = (array) => {
+      const arr = [];
+      for (let i = 0; i < array.length; i++) {
+        arr.push(locz(array[i][0], array[i][1]));
+      }
+      return arr;
+    };
+
+    const locz = (x, y) => [
+      [x - 1, y],
+      [x + 1, y],
+      [x, y - 1],
+      [x, y + 1],
+      [x - 1, y - 1],
+      [x + 1, y + 1],
+      [x + 1, y - 1],
+      [x - 1, y + 1],
+    ];
+
+    const bannedLocsFlat = () => getBannedLocs(allLocsFlat()).flat();
+
+    if (orientation === "horizontal") {
+      if (y + length > 10) return false;
+      for (let i = 0; i < length; i++) {
+        if (bannedLocsFlat().some(([a, b]) => a === x && b === y + i)) {
+          return false;
+        }
+      }
+    } else {
+      if (x + length > 10) return false;
+      for (let i = 0; i < length; i++) {
+        if (bannedLocsFlat().some(([a, b]) => a === x + i && b === y)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
+  const randomNum = () => Math.floor(Math.random() * 10);
+
+  const randomDirection = () => {
+    if (randomNum() < 5) return "horizontal";
+    return "vertical";
+  };
+
+  const randomlyPlaceShips = () => {
+    placeShipRandomly(randomNum(), randomNum(), 5, randomDirection());
+    placeShipRandomly(randomNum(), randomNum(), 4, randomDirection());
+    placeShipRandomly(randomNum(), randomNum(), 3, randomDirection());
+    placeShipRandomly(randomNum(), randomNum(), 3, randomDirection());
+    placeShipRandomly(randomNum(), randomNum(), 2, randomDirection());
   };
 
   const theDeckof = (x, y) => {
@@ -101,6 +164,8 @@ export const Gameboard = (owner) => {
     getBoard,
     getAllLocations,
     moveExists,
+    randomlyPlaceShips,
+    isPlacementValid,
   };
 };
 
@@ -211,14 +276,6 @@ const displayController = (() => {
 
 // GameController
 
-// populate gameboards with ships manually
-// No.	Class of ship	Size
-// 1	  Carrier	        5
-// 2	  Battleship	    4
-// 3	  Destroyer	      3
-// 4	  Submarine	      3
-// 5	  Patrol Boat	    2
-
 const gameController = (() => {
   const player1 = Player("player1");
   const player2 = Player("computer");
@@ -226,22 +283,22 @@ const gameController = (() => {
   const player2Board = Gameboard(player2);
   let gameOver = false;
 
-  // place player1 ships manually
-  player1Board.placeShip(5, "carrier", 3, 1, "vertical");
-  player1Board.placeShip(4, "battleship", 4, 4, "vertical");
-  player1Board.placeShip(3, "destroyer", 0, 7, "horizontal");
-  player1Board.placeShip(3, "submarine", 6, 6, "vertical");
-  player1Board.placeShip(2, "patrolboat", 9, 1, "horizontal");
+  player1Board.randomlyPlaceShips();
 
   // place player2 ships manually
-  player2Board.placeShip(5, "carrier", 9, 1, "horizontal");
-  player2Board.placeShip(4, "battleship", 1, 2, "horizontal");
-  player2Board.placeShip(3, "destroyer", 3, 4, "vertical");
-  player2Board.placeShip(3, "submarine", 4, 0, "vertical");
-  player2Board.placeShip(2, "patrolboat", 6, 6, "horizontal");
+  // player1Board.placeShip(9, 1, 5, "horizontal");
+  // player1Board.placeShip(1, 2, 4, "horizontal");
+  // player1Board.placeShip(3, 4, 3, "vertical");
+  // player1Board.placeShip(4, 0, 3, "vertical");
+  // player1Board.placeShip(7, 5, 2, "vertical");
 
   displayController.renderBoard(player1Board);
   displayController.renderBoard(player2Board);
+
+  // TESTING START
+  const ships = document.querySelectorAll(".ship");
+  console.log(ships.length);
+  // TESTING END
 
   const playRound = (x, y) => {
     if (gameOver) {

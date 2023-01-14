@@ -85,6 +85,10 @@ body {
   background-color: rgb(177, 200, 224);
 }
 
+.ships {
+  background-color: red;
+}
+
 .player2-gameboard .ship {
   background-color: inherit;
 }
