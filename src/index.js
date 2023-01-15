@@ -1,7 +1,6 @@
 /* eslint-disable no-use-before-define */
 import "./style.css";
 
-// Factory functions
 export const Ship = (x, y, length, orientation) => {
   let hitNumber = 0;
   const components = [];
@@ -119,22 +118,17 @@ export const Gameboard = (owner) => {
 
   const theDeckof = (x, y) => {
     const allLocs = getAllLocations();
-    // if there is a Ship or a component at the attacked position
     if (allLocs.some((arr) => arr.some(([a, b]) => a === x && b === y))) {
-      // find the Ship it belongs to
       const attacked = allLocs.find((arr) =>
         arr.some(([a, b]) => a === x && b === y)
       );
-      // return the Ship object
       return getCell(attacked[0][0], attacked[0][1]);
     }
     return false;
   };
 
   const receiveAttack = (x, y) => {
-    // if there is a ship at the given position
     if (theDeckof(x, y)) {
-      // the deck gets attacked
       theDeckof(x, y).getHit();
       hits.push([x, y]);
     } else missedAttacks.push([x, y]);
@@ -190,8 +184,6 @@ export const Player = (name) => {
   return { attack, getName, randomCoord };
 };
 
-// DOM
-
 const displayController = (() => {
   const player1Board = document.querySelector(".player1-gameboard");
   const player2Board = document.querySelector(".player2-gameboard");
@@ -242,6 +234,13 @@ const displayController = (() => {
     announcer.textContent = msg;
   };
 
+  const toggleCheckboxVisibility = () => {
+    const checkboxContainer = document.querySelector(".checkbox-container");
+    if (checkboxContainer.style.visibility === "hidden") {
+      checkboxContainer.style.visibility = "visible";
+    } else checkboxContainer.style.visibility = "hidden";
+  };
+
   const revealComponent = (cell) => {
     if (cell.classList.contains("ship")) {
       cell.style.backgroundColor = "red";
@@ -269,9 +268,19 @@ const displayController = (() => {
 
   const addListeners = () => {
     const enemyCells = document.querySelectorAll(".enemy");
-
     enemyCells.forEach((cell) =>
       cell.addEventListener("click", () => {
+        const { x } = cell.dataset;
+        const { y } = cell.dataset;
+        gameController.playRound(+x, +y);
+      })
+    );
+  };
+  // REMOVE EVENT LISTENERS
+  const removeListeners = () => {
+    const enemyCells = document.querySelectorAll(".enemy");
+    enemyCells.forEach((cell) =>
+      cell.removeEventListener("click", () => {
         const { x } = cell.dataset;
         const { y } = cell.dataset;
         gameController.playRound(+x, +y);
@@ -283,13 +292,13 @@ const displayController = (() => {
     renderBoard,
     resetBoard,
     renderMessage,
+    toggleCheckboxVisibility,
     toggleBoardBlur,
     addListeners,
+    removeListeners,
     markShots,
   };
 })();
-
-// GameController
 
 const gameController = (() => {
   const player1 = Player("player1");
@@ -299,11 +308,54 @@ const gameController = (() => {
   let gameOver = false;
   let round = 0;
 
-  player1Board.randomlyPlaceShips();
-  player2Board.randomlyPlaceShips();
+  const placeShipOnClick = () => {
+    const p1Board = document.querySelector(".player1-gameboard");
+    const shipSizes = [5, 4, 3, 3, 2];
+    let count = 0;
+    let orientation = "vertical";
 
-  displayController.renderBoard(player1Board);
-  displayController.renderBoard(player2Board);
+    displayController.renderMessage("place your carrier");
+
+    const updateMsg = () => {
+      const messages = [
+        "place your battleship",
+        "place your destroyer",
+        "place your submarine",
+        "place your patrol boat",
+        "The game begins.. It's your turn.",
+      ];
+      displayController.renderMessage(messages[count - 1]);
+    };
+
+    const switchElement = document.getElementById("ship-orientation-switch");
+    switchElement.addEventListener("change", (e) => {
+      orientation = e.target.checked ? "horizontal" : "vertical";
+    });
+
+    const handlePlacementClick = (e) => {
+      const { x, y } = e.target.dataset;
+      if (
+        count < shipSizes.length &&
+        player1Board.isPlacementValid(+x, +y, shipSizes[count], orientation)
+      ) {
+        player1Board.placeShip(+x, +y, shipSizes[count], orientation);
+        count += 1;
+      }
+      updateMsg();
+      console.log(count);
+      if (count === 5) {
+        displayController.addListeners();
+        displayController.toggleCheckboxVisibility();
+        p1Board.removeEventListener("click", handlePlacementClick);
+      }
+      displayController.resetBoard("player1Board");
+      displayController.renderBoard(player1Board);
+    };
+
+    p1Board.addEventListener("click", handlePlacementClick);
+
+    return true;
+  };
 
   const randomizeBtn = document.querySelector(".randomize-btn");
   randomizeBtn.addEventListener("click", () => {
@@ -316,16 +368,13 @@ const gameController = (() => {
 
   const resetBtn = document.querySelector(".reset-btn");
   resetBtn.addEventListener("click", () => {
-    if (round === 0) return;
+    if (round < 0) return;
+    displayController.removeListeners();
     player1Board.resetBoard();
     player2Board.resetBoard();
     displayController.resetBoard();
-    player1Board.randomlyPlaceShips();
-    player2Board.randomlyPlaceShips();
-    displayController.renderBoard(player1Board);
-    displayController.renderBoard(player2Board);
+    initGame();
     round = 0;
-    displayController.addListeners();
   });
 
   const playRound = (x, y) => {
@@ -363,8 +412,14 @@ const gameController = (() => {
       gameOver = true;
     }
   };
+  const initGame = () => {
+    placeShipOnClick();
+    player2Board.randomlyPlaceShips();
+    displayController.renderBoard(player1Board);
+    displayController.renderBoard(player2Board);
+  };
+
+  initGame();
 
   return { playRound };
 })();
-
-displayController.addListeners();
