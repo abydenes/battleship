@@ -276,7 +276,7 @@ const displayController = (() => {
       })
     );
   };
-  // REMOVE EVENT LISTENERS
+
   const removeListeners = () => {
     const enemyCells = document.querySelectorAll(".enemy");
     enemyCells.forEach((cell) =>
