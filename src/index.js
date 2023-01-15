@@ -29,12 +29,15 @@ export const Ship = (x, y, length, orientation) => {
 };
 
 export const Gameboard = (owner) => {
-  const board = Array.from({ length: 10 }, () => new Array(10).fill(null));
+  let board = Array.from({ length: 10 }, () => new Array(10).fill(null));
   const missedAttacks = [];
   const hits = [];
 
   const getBoard = () => board;
   const getCell = (x, y) => board[x][y];
+  const resetBoard = () => {
+    board = board.map(() => new Array(10).fill(null));
+  };
 
   const moveExists = (x, y) => {
     if (missedAttacks.some(([a, b]) => a === x && b === y)) return true;
@@ -57,6 +60,7 @@ export const Gameboard = (owner) => {
   };
 
   const isPlacementValid = (x, y, length, orientation) => {
+    // this needs refactoring... lots of it...
     const allLocsFlat = () => getAllLocations().flat();
 
     const getBannedLocs = (array) => {
@@ -162,6 +166,7 @@ export const Gameboard = (owner) => {
     getOwner,
     getCell,
     getBoard,
+    resetBoard,
     getAllLocations,
     moveExists,
     randomlyPlaceShips,
@@ -223,6 +228,15 @@ const displayController = (() => {
     }
   };
 
+  const resetBoard = (board) => {
+    if (board === "player1Board") player1Board.innerHTML = "";
+    else if (board === "player2Board") player2Board.innerHTML = "";
+    else {
+      player1Board.innerHTML = "";
+      player2Board.innerHTML = "";
+    }
+  };
+
   const renderMessage = (msg) => {
     const announcer = document.querySelector(".announcer");
     announcer.textContent = msg;
@@ -267,6 +281,7 @@ const displayController = (() => {
 
   return {
     renderBoard,
+    resetBoard,
     renderMessage,
     toggleBoardBlur,
     addListeners,
@@ -282,23 +297,36 @@ const gameController = (() => {
   const player1Board = Gameboard(player1);
   const player2Board = Gameboard(player2);
   let gameOver = false;
+  let round = 0;
 
   player1Board.randomlyPlaceShips();
-
-  // place player2 ships manually
-  // player1Board.placeShip(9, 1, 5, "horizontal");
-  // player1Board.placeShip(1, 2, 4, "horizontal");
-  // player1Board.placeShip(3, 4, 3, "vertical");
-  // player1Board.placeShip(4, 0, 3, "vertical");
-  // player1Board.placeShip(7, 5, 2, "vertical");
+  player2Board.randomlyPlaceShips();
 
   displayController.renderBoard(player1Board);
   displayController.renderBoard(player2Board);
 
-  // TESTING START
-  const ships = document.querySelectorAll(".ship");
-  console.log(ships.length);
-  // TESTING END
+  const randomizeBtn = document.querySelector(".randomize-btn");
+  randomizeBtn.addEventListener("click", () => {
+    if (round > 0) return;
+    player1Board.resetBoard();
+    displayController.resetBoard("player1Board");
+    player1Board.randomlyPlaceShips();
+    displayController.renderBoard(player1Board);
+  });
+
+  const resetBtn = document.querySelector(".reset-btn");
+  resetBtn.addEventListener("click", () => {
+    if (round === 0) return;
+    player1Board.resetBoard();
+    player2Board.resetBoard();
+    displayController.resetBoard();
+    player1Board.randomlyPlaceShips();
+    player2Board.randomlyPlaceShips();
+    displayController.renderBoard(player1Board);
+    displayController.renderBoard(player2Board);
+    round = 0;
+    displayController.addListeners();
+  });
 
   const playRound = (x, y) => {
     if (gameOver) {
@@ -309,7 +337,7 @@ const gameController = (() => {
       player1.attack(player2Board, x, y);
       displayController.markShots("player2", x, y);
     } else return;
-
+    round += 1;
     displayController.toggleBoardBlur();
     displayController.renderMessage("It's computer's turn.");
 
